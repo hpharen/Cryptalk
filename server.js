@@ -16,6 +16,11 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// Helper function to generate JWT tokens
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
+
 // Register Route
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
@@ -35,14 +40,17 @@ app.post('/register', async (req, res) => {
       [username, hashedPassword]
     );
 
-    // Create JWT token
-    const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    // Generate JWT token
+    const token = generateToken(result.rows[0].id);
 
     res.status(201).json({ token, message: 'User registered successfully' });
   } catch (err) {
     console.error(err);
+
+    if (err.code === '23505') { // PostgreSQL error for unique violation
+      return res.status(400).json({ message: 'Username already exists' });
+    }
+
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -70,10 +78,8 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Create JWT token
-    const token = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    // Generate JWT token
+    const token = generateToken(result.rows[0].id);
 
     res.status(200).json({ token, message: 'Logged in successfully' });
   } catch (err) {
