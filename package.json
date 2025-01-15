@@ -3,10 +3,26 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "- Set up user authentication with JWT and bcrypt\r - Implement routes for registration and login\r - Create basic chat API for sending and receiving messages\r ### Frontend\r - Design simple registration/login page with fields for username and password\r - Create basic chat window with message input area and message display\r ## Phase 2 - Encryption & Secure Messaging\r ### Encryption\r - Libsodium for encrypting messages before sending, decrypting upon receiving\r - Encrypt messages on client-side and ensure only recipient can decrypt them\r ### Socket.IO Integration\r - Real-time communication with Socket.IO\r - Messages encrypted before being sent over WebSocket connection\r ## Phase 3 - Data Purge & User Settings\r ### Account Deletion\r - Implement user settings button to permanently delete account and data\r - Should trigger server-side process to delete all personal data, messages, files from database and disk\r ## Phase 4 - Full-Scale Testing & Deployment\r ### Testing\r - Test end-to-end functionality, encryption, and data deletion\r - Run security audits to ensure no data leaks\r ### Deploy\r - Use docker to containerize app for easier deployment\r - Host app on a service like DigitalOcean, AWS, Heroku",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hpharen/Cryptalk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hpharen/Cryptalk/issues"
+  },
+  "homepage": "https://github.com/hpharen/Cryptalk#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  }
 }
