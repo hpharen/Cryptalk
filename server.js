@@ -30,28 +30,20 @@ app.post('/register', async (req, res) => {
   }
 
   try {
-    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Store user in database
     const result = await pool.query(
       'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id',
       [username, hashedPassword]
     );
 
-    // Generate JWT token
     const token = generateToken(result.rows[0].id);
 
     res.status(201).json({ token, message: 'User registered successfully' });
   } catch (err) {
-    console.error(err);
-
-    if (err.code === '23505') { // PostgreSQL error for unique violation
-      return res.status(400).json({ message: 'Username already exists' });
-    }
-
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error during registration:', err);  // Logs the error to the console
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
