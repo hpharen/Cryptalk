@@ -1,7 +1,7 @@
 # CRYPTALK
 ## Phase 1 - User Authentication & Basic Chat
 ### Backend
-- Set up user authentication with JWT and bcrypt
+[x] Set up user authentication with JWT and bcrypt
 - Implement routes for registration and login
 - Create basic chat API for sending and receiving messages
 ### Frontend
