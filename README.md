@@ -2,7 +2,7 @@
 ## Phase 1 - User Authentication & Basic Chat
 ### Backend
 - [x] Set up user authentication with JWT and bcrypt
-- [ ] Implement routes for registration and login
+- [x] Implement routes for registration and login
 - [ ] Create basic chat API for sending and receiving messages
 ### Frontend
 - [ ] Design simple registration/login page with fields for username and password
