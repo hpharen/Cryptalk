@@ -3,6 +3,11 @@ const express = require('express'); // Web framework for handling HTTP requests 
 const bcrypt = require('bcryptjs'); // Library for securely handling passwords
 const jwt = require('jsonwebtoken'); // Library for creating JSON Web Tokens to authenticate users
 const { Pool } = require('pg'); // Loads PostgreSQL connection pool for database queries
+/*
+const http = require('http'); // Import http to create a server
+const { Server } = require('socket.io'); // Import socket.io
+const cors = require('cors');
+*/
 require('dotenv').config(); // Loads environment variables
 
 const app = express(); // Creates new express application
@@ -23,6 +28,55 @@ const generateToken = (userId) => {
   // Generates a token using userId, secret key from .env, and expires in 1 hour
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
+
+// Attempted chat functionality
+/*
+// Create HTTP server and initialize socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*', // Allow all origins for now (adjust in production)
+    methods: ["GET", "POST"]
+  },
+});
+
+// Initialize a mapping of socket IDs to user IDs
+const socketUserMap = {};
+
+// Handle WebSocket connections
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  // Register user by userId (authentication simulation)
+  socket.on('authenticate', (userId) => {
+    socketUserMap[socket.id] = userId;
+    console.log(`User with ID ${userId} authenticated, socket ID: ${socket.id}`);
+  });
+
+  // Relay messages between users
+  socket.on('send_message', ({ senderId, receiverId, message }) => {
+    console.log(`Message from ${senderId} to ${receiverId}: ${message}`);
+
+    // Find receiver's socket ID
+    const receiverSocketId = Object.keys(socketUserMap).find(
+      (socketId) => socketUserMap[socketId] === receiverId
+    );
+
+    if (receiverSocketId) {
+      // Send message to receiver
+      io.to(receiverSocketId).emit('receive_message', { senderId, message });
+    } else {
+      console.log(`Receiver with ID ${receiverId} not connected.`);
+    }
+  });
+
+  // Remove user from mapping when they disconnect
+  socket.on('disconnect', () => {
+    console.log('A user disconnected:', socket.id);
+    delete socketUserMap[socket.id];
+  });
+});
+*/
 
 // Register Route
 // Handles POST requests sent to /register when user signs up
