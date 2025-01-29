@@ -3,11 +3,9 @@ const express = require('express'); // Web framework for handling HTTP requests 
 const bcrypt = require('bcryptjs'); // Library for securely handling passwords
 const jwt = require('jsonwebtoken'); // Library for creating JSON Web Tokens to authenticate users
 const { Pool } = require('pg'); // Loads PostgreSQL connection pool for database queries
-/*
 const http = require('http'); // Import http to create a server
 const { Server } = require('socket.io'); // Import socket.io
 const cors = require('cors');
-*/
 require('dotenv').config(); // Loads environment variables
 
 const app = express(); // Creates new express application
@@ -29,8 +27,6 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-// Attempted chat functionality
-/*
 // Create HTTP server and initialize socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -76,7 +72,6 @@ io.on('connection', (socket) => {
     delete socketUserMap[socket.id];
   });
 });
-*/
 
 // Register Route
 // Handles POST requests sent to /register when user signs up

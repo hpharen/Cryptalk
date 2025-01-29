@@ -38,3 +38,6 @@
 - pg: PostgresSQL client for Node.js
 - jsonwebtoken: JWT creating secure authentication tokens, authentication & authorization mechanism
 - dotenv: Management of environment variables
+
+## Notes during development
+- Switch from HTTP to HTTPS
