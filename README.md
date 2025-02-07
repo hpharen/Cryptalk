@@ -3,7 +3,7 @@
 ### Backend
 - [x] Set up user authentication with JWT and bcrypt
 - [x] Implement routes for registration and login
-- [ ] Create basic chat API for sending and receiving messages
+- [ ] Create basic chat API for sending and receiving messages PRIORITY
 ### Frontend
 - [ ] Design simple registration/login page with fields for username and password
 - [ ] Create basic chat window with message input area and message display

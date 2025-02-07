@@ -1,6 +1,6 @@
 const { io } = require('socket.io-client');
 
-const socket = io('http://localhost:5090'); // Make sure this matches your server's URL
+const socket = io('http://localhost:5090');
 
 socket.on('connect', () => {
   console.log('Connected to the server!');
