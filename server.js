@@ -3,15 +3,16 @@ const express = require('express'); // Web framework for handling HTTP requests 
 const bcrypt = require('bcryptjs'); // Library for securely handling passwords
 const jwt = require('jsonwebtoken'); // Library for creating JSON Web Tokens to authenticate users
 const { Pool } = require('pg'); // Loads PostgreSQL connection pool for database queries
-const http = require('http'); // Import http to create a server
-const { Server } = require('socket.io'); // Import socket.io
+const http = require('http'); // HTTP server
+const { Server } = require('socket.io'); // WebSocket server
 const cors = require('cors');
 require('dotenv').config(); // Loads environment variables
 
 const app = express(); // Creates new express application
 app.use(express.json()); // Makes sure app can read JSON data in HTTP requests
+app.use(cors()); // Allow cross-origin requests
 
-// Set up PostgreSQL connection pool
+// PostgreSQL connection pool
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -20,14 +21,14 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// Helper function to generate JWT tokens
+// Helper function to generate JWT
 // JWT is a small, secure token that proves a user is logged in
 const generateToken = (userId) => {
   // Generates a token using userId, secret key from .env, and expires in 1 hour
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-// Create HTTP server and initialize socket.io
+// Create HTTP server and initialize Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -36,47 +37,73 @@ const io = new Server(server, {
   },
 });
 
-// Initialize a mapping of socket IDs to user IDs
+// Initialize a mapping of socket IDs to user IDs to store user connections
 const socketUserMap = {};
+
+// Authenticate WebSocket connections
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error("Authentication error: No token provided"));
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return next(new Error("Authentication error: Invalid token"));
+    }
+    socket.userId = decoded.userId;
+    next();
+  });
+});
 
 // Handle WebSocket connections
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log(`User connected: ${socket.userId} (Socket ID: ${socket.id})`);
 
-  // Register user by userId (authentication simulation)
-  socket.on('authenticate', (userId) => {
-    socketUserMap[socket.id] = userId;
-    console.log(`User with ID ${userId} authenticated, socket ID: ${socket.id}`);
-  });
+  // Register user in active users list
+  socketUserMap[socket.id] = socket.userId;
 
-  // Relay messages between users
-  socket.on('send_message', ({ senderId, receiverId, message }) => {
-    console.log(`Message from ${senderId} to ${receiverId}: ${message}`);
+  // Update send_message to check authentication
+  socket.on('send_message', ({ receiverId, message }) => {
+    if (!socket.userId) {
+      console.log('Unauthorized message attempt');
+      return;
+    }
 
-    // Find receiver's socket ID
+    console.log(`Message from ${socket.userId} to ${receiverId}: ${message}`);
+
     const receiverSocketId = Object.keys(socketUserMap).find(
-      (socketId) => socketUserMap[socketId] === receiverId
+      (id) => socketUserMap[id] === receiverId
     );
 
     if (receiverSocketId) {
-      // Send message to receiver
-      io.to(receiverSocketId).emit('receive_message', { senderId, message });
+      io.to(receiverSocketId).emit('receive_message', {
+        senderId: socket.userId,
+        message,
+      });
     } else {
-      console.log(`Receiver with ID ${receiverId} not connected.`);
+      console.log(`Receiver ID ${receiverId} not connected.`);
     }
   });
 
-  // Remove user from mapping when they disconnect
+  // Handle disconnection
   socket.on('disconnect', () => {
-    console.log('A user disconnected:', socket.id);
+    console.log(`User disconnected: ${socket.userId}`);
+    // Remove user from mapping when they disconnect
     delete socketUserMap[socket.id];
   });
 });
 
-// Register Route
+// Add endpoint to get active users
+app.get('/active-users', (req, res) => {
+  const activeUsers = Object.values(socketUserMap);
+  res.json({ activeUsers });
+});
+
+// Register route
 // Handles POST requests sent to /register when user signs up
 app.post('/register', async (req, res) => {
-
+  
   // Reads username and password from request body
   const { username, password } = req.body;
 
@@ -105,12 +132,12 @@ app.post('/register', async (req, res) => {
     res.status(201).json({ token, message: 'User registered successfully' });
 
   } catch (err) { // Error handling
-    console.error('Error during registration:', err);  // Logs error to console
+    console.error('Error during registration:', err); // Logs error to console
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
-// Login Route
+// Login route
 // Handles POST requests sent to /login when user tries to sign in
 app.post('/login', async (req, res) => {
 
@@ -154,6 +181,6 @@ app.post('/login', async (req, res) => {
 // Start server
 // Reads PORT from .env or defaults to 5090
 const PORT = process.env.PORT || 5090;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
